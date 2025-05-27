@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: node_gql_drizzle_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    ports:
+      - '4000:4000'
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/node_gql_drizzle_db
+      NODE_ENV: production
+      PORT: 4000
+    depends_on:
+      - postgres
+    volumes:
+      - ./drizzle:/app/drizzle
+    command: >
+      sh -c "
+        npm run db:migrate &&
+        npm run db:seed &&
+        npm start
+      "
+
+volumes:
+  postgres_data:
